@@ -1,0 +1,28 @@
+DESCRIPTION >
+	Calculates the average pipeline execution time for all commits over the last `x` days.
+
+
+TOKEN "avg_pipeline_time_last_x_days_endpoint_read_7647" READ
+
+NODE commit_durations
+SQL >
+
+    %
+    SELECT
+      commit,
+      uniq(test_name) AS total_tests,
+      min(date) AS start_time,
+      max(date) AS end_time,
+      max(date) - min(date) AS duration_seconds
+    FROM test_reports
+    WHERE date >= now() - INTERVAL {{UInt8(x, 7, description="Number of days to lookback")}} day
+    GROUP BY commit
+
+
+
+NODE endpoint
+SQL >
+
+    SELECT avg(duration_seconds)/60 AS minutes FROM commit_durations
+
+

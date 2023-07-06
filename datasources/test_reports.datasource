@@ -1,0 +1,19 @@
+TOKEN "pytest-executor-write" APPEND
+
+
+SCHEMA >
+    `commit` String `json:$.commit`,
+    `branch` String `json:$.branch`,
+    `date` DateTime `json:$.date`,
+    `duration` Float32 `json:$.duration`,
+    `job_id` String `json:$.job_id`,
+    `job_name` String `json:$.job_name`,
+    `job_url` String `json:$.job_url`,
+    `outcome` LowCardinality(String) `json:$.outcome`,
+    `test_name` String `json:$.test_name`,
+    `test_nodeid` String `json:$.test_nodeid`,
+    `test_part` LowCardinality(String) `json:$.test_part`
+
+ENGINE "MergeTree"
+ENGINE_PARTITION_KEY "toYYYYMM(date)"
+ENGINE_SORTING_KEY "date, branch, job_id, test_nodeid"

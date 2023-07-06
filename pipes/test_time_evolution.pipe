@@ -1,0 +1,36 @@
+DESCRIPTION >
+	Test execution times by day over the last `x` days. Results default to all tests unless a specific `test_name` is passed.
+
+
+TOKEN "test_time_evolution_endpoint_read_5951" READ
+
+NODE test_durations
+SQL >
+
+    %
+    SELECT
+      test_name,
+      test_nodeid,
+      date,
+      duration
+    FROM test_reports
+    WHERE date >= now() - INTERVAL {{UInt8(x, 7, description="Number of days to lookback")}} day
+    {% if defined(_test_name) %}
+      AND test_name = {{String(_test_name, description="The name of the test to filter by")}}
+    {% end %}
+
+
+
+NODE endpoint
+SQL >
+
+    SELECT 
+      toStartOfDay(date) AS date,
+      test_nodeid,
+      test_name,
+      avg(duration)/60 AS minutes
+    FROM test_durations
+    GROUP BY date, test_nodeid, test_name
+    ORDER BY date DESC
+
+

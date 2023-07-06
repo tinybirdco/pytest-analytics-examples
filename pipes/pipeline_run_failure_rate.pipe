@@ -1,0 +1,27 @@
+DESCRIPTION >
+	Calculates average job failure over the last `x` days. Results default to all job unless a specific `job_name` is passed.
+
+
+TOKEN "pipeline_run_failure_rate_endpoint_read_2337" READ
+
+NODE test_failures_by_commit
+SQL >
+
+    %
+    SELECT
+      commit,
+      sum(outcome = 'passed' ? 0 : 1) AS test_failures
+    FROM test_reports
+    WHERE date >= now() - INTERVAL {{UInt8(x, 7, description="Number of days to lookback")}} day
+    GROUP BY commit
+
+
+
+NODE endpoint
+SQL >
+
+    SELECT 
+      sum(test_failures > 0)/count() * 100 AS failure_rate_pct
+    FROM test_failures_by_commit
+
+

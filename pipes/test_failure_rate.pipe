@@ -1,0 +1,32 @@
+DESCRIPTION >
+	Calculates average test failure over the last `x` days. Results default to all tests unless a specific `test_name` is passed.
+
+
+TOKEN "test_failure_rate_endpoint_read_1616" READ
+
+NODE test_failures
+SQL >
+
+    %
+    SELECT
+      test_name,
+      outcome = 'passed' ? 0 : 1 AS outcome
+    FROM test_reports
+    WHERE date >= now() - INTERVAL {{UInt8(x, 7, description="Number of days to lookback")}} day
+    {% if defined(_test_name) %}
+      AND test_name = {{String(_test_name, description="The name of the test to filter by")}}
+    {% end %}
+
+
+
+NODE endpoint
+SQL >
+
+    SELECT 
+      test_name,
+      avg(outcome) * 100 AS failure_rate_pct
+    FROM test_failures
+    GROUP BY test_name
+    ORDER BY failure_rate_pct DESC
+
+
