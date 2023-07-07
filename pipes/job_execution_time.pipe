@@ -8,20 +8,21 @@ NODE job_durations
 SQL >
 
     %
-    SELECT
-      job_id,
-      job_name,
-      job_url,
-      uniq(test_name) AS total_tests,
-      min(date) AS start_time,
-      max(date) AS end_time,
-      max(date) - min(date) AS duration_seconds
-    FROM test_reports
-    WHERE date >= now() - INTERVAL {{UInt8(x, 7, description="Number of days to lookback")}} day
-    {% if defined(_job_name) %}
-      AND job_name = {{String(_job_name, description="The name of the job to filter by")}}
-    {% end %}
-    GROUP BY job_id, job_name, job_url
+        SELECT
+          job_id,
+          job_name,
+          job_url,
+          uniq(test_name) AS total_tests,
+          min(date) AS start_time,
+          max(date) AS end_time,
+          max(date) - min(date) AS duration_seconds
+        FROM test_reports
+        WHERE date >= now() - INTERVAL {{UInt8(x, 7, description="Number of days to lookback")}} day
+        {% if defined(_job_name) %}
+          AND job_name = {{String(_job_name, description="The name of the job to filter by")}}
+        {% end %}
+        AND outcome in ('passed', 'failed')
+        GROUP BY job_id, job_name, job_url
 
 
 

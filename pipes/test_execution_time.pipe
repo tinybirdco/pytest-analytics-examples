@@ -8,16 +8,17 @@ NODE test_durations
 SQL >
 
     %
-    SELECT
-      test_name,
-      test_nodeid,
-      date,
-      duration
-    FROM test_reports
-    WHERE date >= now() - INTERVAL {{UInt8(x, 7, description="Number of days to lookback")}} day
-    {% if defined(_test_name) %}
-      AND test_name = {{String(_test_name, description="The name of the test to filter by")}}
-    {% end %}
+        SELECT
+          test_name,
+          test_nodeid,
+          date,
+          duration
+        FROM test_reports
+        WHERE date >= now() - INTERVAL {{UInt8(x, 7, description="Number of days to lookback")}} day
+        {% if defined(_test_name) %}
+          AND test_name = {{String(_test_name, description="The name of the test to filter by")}}
+        {% end %}
+        AND outcome in ('passed', 'failed')
 
 
 
